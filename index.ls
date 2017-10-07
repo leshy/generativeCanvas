@@ -30,10 +30,18 @@ modifyContext = (ctx, mod) ->
   ctx = clone ctx
   cvector = ctx{x, y}
   mvector = mod{x, y}
-  assignInWith(ctx, mod, (+))
+
+  standardJoin = (target, mod, ctx) ->
+    if not target? then return mod
+    if not mod? then return target
+    if mod@@ is Function then return mod target, ctx
+    mod + target
+    
+  assignInWith(ctx, mod, standardJoin)
     <<< applyVector(cvector, mvector, ctx.r)
     <<< normalizeRotation(ctx.r)
 
+#  console.log ctx
   if ctx.s > 0 then ctx else void
 
 transform = (modification, rule) -> (ctx) ->
@@ -98,9 +106,22 @@ creep = (ctx) ->
 
 creepSplit = (ctx) -> next(ctx) creep, creep
 
-test = (n=1000) ->
-  execLoop n, creep defaultContext! <<< { s: 10, r: random(0,360) }
-#  execLoop n, cai defaultContext! <<< { s: 50, r: 0 }
+
+alienLogoArm = (ctx) ->
+  next(ctx) do
+    square,
+    transform( x: 4, r: random(0, -4, true), y: 0, s: random(-1,0.8), alienLogoArm )
+
+alienLogo = -> next(it) do
+  transform r: 0, alienLogoArm
+  transform r: 90, alienLogoArm
+  transform r: 180, alienLogoArm
+  transform r: 270, alienLogoArm
+  
+    
+test = ->
+#  execLoop 1000, creep defaultContext! <<< { s: 10, r: random(0,360) }
+  execLoop 1800, alienLogo defaultContext! <<< { s: 20, r: 0 }
 
 global.draw = ->
   global.c = c = document.getElementById('canvas').getContext('2d')
