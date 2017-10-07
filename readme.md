@@ -1,4 +1,4 @@
-livescript generative images using context free grammar in the browser canvas
+recursive stochastic image generator in html5 canvas inspired by L-systems and context free grammars
 
 http://lesh.sysphere.org/stuff1/graphics/
 
