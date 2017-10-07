@@ -1,0 +1,20 @@
+{
+  "name": "graphics",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "lesh <lesh@sysphere.org> (http://lesh.sysphere.org)",
+  "license": "ISC",
+  "devDependencies": {
+    "browserify": "^14.4.0",
+    "browserify-livescript": "^0.2.3",
+    "budo": "^10.0.4",
+    "livescript": "^1.5.0",
+    "watchify": "^3.9.0",
+    "watchify-server": "^1.0.2"
+  }
+}
