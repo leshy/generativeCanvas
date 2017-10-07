@@ -76,3 +76,4 @@ global.draw = ->
   
 if not window? then test()
   
+
