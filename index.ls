@@ -1,6 +1,6 @@
 require! {
   util,
-  leshdash: { map, flatten, filter, identity, assignInWith, times, clone, random }
+  leshdash: { map, flatten, filter, identity, assignInWith, times, clone, random, keys, omit, mapValues, union, reduce, sample }
 }
 
 rule = (f) ->
@@ -8,16 +8,35 @@ rule = (f) ->
     (ctx) ->
       elements = f()
       
-defaultContext = -> { x: c.canvas.width / 2, y: c.canvas.height / 2, s: 10, a: 0 }
+defaultContext = ->
+  (if window? then { x: Math.round(c.canvas.width / 2), y: Math.round(c.canvas.height - 50) } else { x: 500, y: 500 }) <<< { s: 5, r: 0 }
 
-specialTransforms = do
-  x: (ctx, mod) -> x: (ctx.x + mod.x)
-  y: (ctx, mod) -> y: (ctx.y + mod.y)
+radianConstant = Math.PI / 180
+radians = (d) -> d * radianConstant
+  
+  
+applyVector = (v1, v2, angle) ->
+  x = v2.x or 0
+  y = v2.y or 0
+  r = radians angle
+  x2 = (Math.cos(r) * x) - (Math.sin(r) * y)
+  y2 = (Math.sin(r) * x) + (Math.cos(r) * y)
+  
+  console.log angle, v2, { x: x2, y: y2 }
+  
+  { x: v1.x + x2, y: v1.y + y2 }
 
-modifyContext = (context, modification) ->
-  context = clone context
-  assignInWith context, modification, (+)
+normalizeRotation = (angle) -> r: angle % 360
 
+modifyContext = (ctx, mod) ->
+
+  cvector = ctx{x, y}
+  mvector = mod{x, y}
+  assignInWith(ctx, mod, (+))
+    <<< applyVector(cvector, mvector, ctx.r)
+    <<< normalizeRotation(ctx.r)
+    
+  ctx
 
 transform = (modification, rule) -> (ctx) ->
   rule modifyContext(ctx, modification)
@@ -35,17 +54,20 @@ square = (ctx) ->
     c.rect(ctx.x - ctx.s, ctx.y - ctx.s, ctx.s * 2, ctx.s * 2);
     c.stroke();
 
+maybe = (...elements) ->
+  sample elements
+
+weighted = (...elements) ->
+  sample elements
+
 arm = (ctx) ->
   next(ctx) do
-    transform( {s: random(30) }, circle)
-    transform( y: 40, arm)
-    transform( y: -40, arm)
-    transform( x: 30, arm)
-    transform( x: -30, arm)
+    circle,
+    transform( x: 10, y: 0, s: 0, r: random(-10,10),  arm)
+
 
 start = (ctx) ->
   next(ctx) do
-    square
     arm
 
 execute = (elements) ->
@@ -57,15 +79,13 @@ execLoop = (n, elements) ->
 
   render = (n) ->
     if not n then return
-    console.log elements.length
     elements := execute elements
     setTimeout -> render(n-1)
 
   render(n)
 
-    
-test = (n=7)-> 
-  console.log execLoop n, start defaultContext!
+test = (n=10) ->
+  execLoop n, start defaultContext! <<< { s: 10, r: -90 }
 
 global.draw = ->
   global.c = c = document.getElementById('canvas').getContext('2d')
@@ -73,7 +93,9 @@ global.draw = ->
   c.canvas.width  = window.innerWidth;
   c.canvas.height = window.innerHeight;
   test()
-  
+
+
 if not window? then test()
-  
+
+    
 
