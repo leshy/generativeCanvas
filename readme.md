@@ -1,6 +1,6 @@
 livescript generative images using context free grammar in the browser canvas
 
-![sample!](sample.png)
+![sample](./sample.png)
 
 
 ```
