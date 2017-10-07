@@ -1,6 +1,5 @@
 livescript generative images using context free grammar in the browser canvas
 
-![sample](sample.jpg)
 
 
 ```
@@ -9,3 +8,8 @@ npm run devserver
 ```
 
 visit http://localhost:6699
+
+
+![sample1](sample1.jpg)
+
+![sample2](sample2.jpg)

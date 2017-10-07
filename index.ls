@@ -1,6 +1,6 @@
 require! {
   util,
-  leshdash: { map, flatten, filter, identity, assignInWith, times, clone, random, keys, omit, mapValues, union, reduce, sample }
+  leshdash: { map, flatten, filter, identity, assignInWith, times, clone, random, keys, omit, mapValues, union, reduce, sample, head, find, last }
 }
 
 rule = (f) ->
@@ -9,7 +9,7 @@ rule = (f) ->
       elements = f()
       
 defaultContext = ->
-  (if window? then { x: Math.round(c.canvas.width / 2), y: Math.round(c.canvas.height - 50) } else { x: 500, y: 500 }) <<< { s: 5, r: 0 }
+  (if window? then { x: Math.round(c.canvas.width / 2), y: Math.round(c.canvas.height / 2) } else { x: 500, y: 500 }) <<< { s: 5, r: 0 }
 
 radianConstant = Math.PI / 180
 radians = (d) -> d * radianConstant
@@ -19,29 +19,28 @@ applyVector = (v1, v2, angle) ->
   x = v2.x or 0
   y = v2.y or 0
   r = radians angle
-  x2 = (Math.cos(r) * x) - (Math.sin(r) * y)
-  y2 = (Math.sin(r) * x) + (Math.cos(r) * y)
-  
-  console.log angle, v2, { x: x2, y: y2 }
+  x2 = Math.round(Math.cos(r) * x) - (Math.sin(r) * y)
+  y2 = Math.round(Math.sin(r) * x) + (Math.cos(r) * y)
   
   { x: v1.x + x2, y: v1.y + y2 }
 
 normalizeRotation = (angle) -> r: angle % 360
 
 modifyContext = (ctx, mod) ->
-
+  ctx = clone ctx
   cvector = ctx{x, y}
   mvector = mod{x, y}
   assignInWith(ctx, mod, (+))
     <<< applyVector(cvector, mvector, ctx.r)
     <<< normalizeRotation(ctx.r)
-    
-  ctx
+
+  if ctx.s > 0 then ctx else void
 
 transform = (modification, rule) -> (ctx) ->
-  rule modifyContext(ctx, modification)
+  if ctx = modifyContext(ctx, modification) then rule ctx
 
-next = (ctx) -> (...elements) -> map elements, (element) -> -> element(ctx)
+next = (ctx) -> (...elements) -> map flatten(elements), (element) -> -> element(ctx)
+
 
 circle = (ctx) ->
   if c = global.c
@@ -58,12 +57,26 @@ maybe = (...elements) ->
   sample elements
 
 weighted = (...elements) ->
-  sample elements
+  target = Math.random() * reduce do
+    elements
+    (total, element) -> total + head element
+    0
+
+  last find elements, (element) ->
+    0 > (target := target - head element)
+
+speed = 3
+size = -0.065
 
 arm = (ctx) ->
   next(ctx) do
     circle,
-    transform( x: 10, y: 0, s: 0, r: random(-10,10),  arm)
+    weighted do
+      [ 25, transform( x: speed, y: 0, s: size, r: random(-30,30),  arm) ]
+      [ 1, [
+        transform( x: speed, y: 0, s: size, r: random(-30,30),  arm)
+        transform( x: speed, y: 0, s: size, r: random(-30,30),  arm)
+      ]]
 
 
 start = (ctx) ->
@@ -84,7 +97,7 @@ execLoop = (n, elements) ->
 
   render(n)
 
-test = (n=10) ->
+test = (n=1000) ->
   execLoop n, start defaultContext! <<< { s: 10, r: -90 }
 
 global.draw = ->
@@ -96,6 +109,5 @@ global.draw = ->
 
 
 if not window? then test()
-
     
-
+console.log "RES", weighted [ 2, "bla" ],  [ 1, "blu" ]
