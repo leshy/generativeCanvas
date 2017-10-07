@@ -15,12 +15,12 @@ radianConstant = Math.PI / 180
 radians = (d) -> d * radianConstant
   
   
-applyVector = (v1, v2, angle) ->
-  x = v2.x or 0
-  y = v2.y or 0
+applyVector = (v1, v2, angle, size=1) ->
+  x = (v2.x or 0) * size
+  y = (v2.y or 0) * size
   r = radians angle
-  x2 = Math.round(Math.cos(r) * x) - (Math.sin(r) * y)
-  y2 = Math.round(Math.sin(r) * x) + (Math.cos(r) * y)
+  x2 = (Math.cos(r) * x) - (Math.sin(r) * y)
+  y2 = (Math.sin(r) * x) + (Math.cos(r) * y)
   
   { x: v1.x + x2, y: v1.y + y2 }
 
@@ -38,11 +38,11 @@ modifyContext = (ctx, mod) ->
     mod + target
     
   assignInWith(ctx, mod, standardJoin)
-    <<< applyVector(cvector, mvector, ctx.r)
+    <<< applyVector(cvector, mvector, ctx.r, ctx.s)
     <<< normalizeRotation(ctx.r)
 
 #  console.log ctx
-  if ctx.s > 0 then ctx else void
+  if ctx.s > 0.9 then ctx else void
 
 transform = (modification, rule) -> (ctx) ->
   if ctx = modifyContext(ctx, modification) then rule ctx
@@ -101,7 +101,7 @@ creep = (ctx) ->
   next(ctx) do
     circle,
     weighted do
-      [ 25, transform( x: 3, y: 0, s: size, r: random(-30,30),  creep) ]
+      [ 25, transform( x: 0.75, y: 0, s: size, r: random(-30,30),  creep) ]
       [ 1, creepSplit ]
 
 creepSplit = (ctx) -> next(ctx) creep, creep
@@ -110,12 +110,12 @@ creepSplit = (ctx) -> next(ctx) creep, creep
 alienLogoArmRight = (ctx) ->
   next(ctx) do
     square,
-    transform( x: 4, r: random(0, -4, true), y: 0, s: random(-1,0.8), alienLogoArmRight )
+    transform( x: 0.3, r: random(0, -4, true), y: 0, s: random(-1,0.8), alienLogoArmRight )
 
 alienLogoArmLeft = (ctx) ->
   next(ctx) do
     square,
-    transform( x: 6, r: random(0, 4, true), y: 0, s: random(-1,0.8), alienLogoArmLeft )
+    transform( x: 0.3, r: random(0, 4, true), y: 0, s: random(-1,0.8), alienLogoArmLeft )
 
 alienLogo = -> next(it) do
   transform r: 0, alienLogoArmLeft
@@ -126,12 +126,28 @@ alienLogo = -> next(it) do
   transform r: 90, alienLogoArmRight
   transform r: 180, alienLogoArmRight
   transform r: 270, alienLogoArmRight
-    
-    
+
+spiral = -> next(it) do
+  circle
+  transform r: 46, x: 1, s: (* 1.01), spiral
+            
+
+circleTree = -> next(it) do
+  circle
+  transform x: 2.5, s: (-> it / 1.5), r: 66, circleTree
+  transform x: 2.5, s: (-> it / 1.5), r: -66, circleTree
+
+
+circleIn = -> next(it) do
+  circle
+  transform s: (-> it * 1.5), circleIn
+
 test = ->
-  execLoop 1000, creep defaultContext! <<< { s: 10, r: random(0,360) }
+#  execLoop 1000, creep defaultContext! <<< { s: 10, r: random(0,360) }
 #  execLoop 1800, alienLogo defaultContext! <<< { s: 20, r: 0 }
-#  execLoop 1800, alienLogo defaultContext! <<< { s: 20, r: 0 }
+#  execLoop 1000, spiral defaultContext! <<< { s: 1, r: 1 }
+  execLoop 1000, circleTree defaultContext! <<< { s: 100, r: -90 }
+#  execLoop 1000, circleIn defaultContext! <<< { s: 1, r: -90 }
 
 global.draw = ->
   global.c = c = document.getElementById('canvas').getContext('2d')
