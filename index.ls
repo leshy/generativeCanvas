@@ -39,8 +39,15 @@ modifyContext = (ctx, mod) ->
 transform = (modification, rule) -> (ctx) ->
   if ctx = modifyContext(ctx, modification) then rule ctx
 
-next = (ctx) -> (...elements) -> map flatten(elements), (element) -> -> element(ctx)
+next = (ctx) -> (...elements) -> map elements, (element) -> -> element(ctx)
 
+line = (ctx) ->
+  if c = global.c
+    c.beginPath();
+    c.moveTo(ctx.x, ctx.y);
+    { x, y } = applyVector({ x: 0, y: 0}, { x: ctx.s, y: 0 }, ctx.r)
+    c.lineTo(ctx.x + x, ctx.y + y);
+    c.stroke();
 
 circle = (ctx) ->
   if c = global.c
@@ -65,23 +72,7 @@ weighted = (...elements) ->
   last find elements, (element) ->
     0 > (target := target - head element)
 
-speed = 3
-size = -0.065
-
-arm = (ctx) ->
-  next(ctx) do
-    circle,
-    weighted do
-      [ 25, transform( x: speed, y: 0, s: size, r: random(-30,30),  arm) ]
-      [ 1, [
-        transform( x: speed, y: 0, s: size, r: random(-30,30),  arm)
-        transform( x: speed, y: 0, s: size, r: random(-30,30),  arm)
-      ]]
-
-
-start = (ctx) ->
-  next(ctx) do
-    arm
+size = -0.060
 
 execute = (elements) ->
   map elements, (element) -> element()
@@ -97,8 +88,19 @@ execLoop = (n, elements) ->
 
   render(n)
 
+
+creep = (ctx) ->
+  next(ctx) do
+    circle,
+    weighted do
+      [ 25, transform( x: 3, y: 0, s: size, r: random(-30,30),  creep) ]
+      [ 1, creepSplit ]
+
+creepSplit = (ctx) -> next(ctx) creep, creep
+
 test = (n=1000) ->
-  execLoop n, start defaultContext! <<< { s: 10, r: -90 }
+  execLoop n, creep defaultContext! <<< { s: 10, r: random(0,360) }
+#  execLoop n, cai defaultContext! <<< { s: 50, r: 0 }
 
 global.draw = ->
   global.c = c = document.getElementById('canvas').getContext('2d')
@@ -110,4 +112,3 @@ global.draw = ->
 
 if not window? then test()
     
-console.log "RES", weighted [ 2, "bla" ],  [ 1, "blu" ]
