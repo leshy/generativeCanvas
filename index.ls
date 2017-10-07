@@ -107,21 +107,31 @@ creep = (ctx) ->
 creepSplit = (ctx) -> next(ctx) creep, creep
 
 
-alienLogoArm = (ctx) ->
+alienLogoArmRight = (ctx) ->
   next(ctx) do
     square,
-    transform( x: 4, r: random(0, -4, true), y: 0, s: random(-1,0.8), alienLogoArm )
+    transform( x: 4, r: random(0, -4, true), y: 0, s: random(-1,0.8), alienLogoArmRight )
+
+alienLogoArmLeft = (ctx) ->
+  next(ctx) do
+    square,
+    transform( x: 6, r: random(0, 4, true), y: 0, s: random(-1,0.8), alienLogoArmLeft )
 
 alienLogo = -> next(it) do
-  transform r: 0, alienLogoArm
-  transform r: 90, alienLogoArm
-  transform r: 180, alienLogoArm
-  transform r: 270, alienLogoArm
-  
+  transform r: 0, alienLogoArmLeft
+  transform r: 90, alienLogoArmLeft
+  transform r: 180, alienLogoArmLeft
+  transform r: 270, alienLogoArmLeft
+  transform r: 0, alienLogoArmRight
+  transform r: 90, alienLogoArmRight
+  transform r: 180, alienLogoArmRight
+  transform r: 270, alienLogoArmRight
+    
     
 test = ->
-#  execLoop 1000, creep defaultContext! <<< { s: 10, r: random(0,360) }
-  execLoop 1800, alienLogo defaultContext! <<< { s: 20, r: 0 }
+  execLoop 1000, creep defaultContext! <<< { s: 10, r: random(0,360) }
+#  execLoop 1800, alienLogo defaultContext! <<< { s: 20, r: 0 }
+#  execLoop 1800, alienLogo defaultContext! <<< { s: 20, r: 0 }
 
 global.draw = ->
   global.c = c = document.getElementById('canvas').getContext('2d')
