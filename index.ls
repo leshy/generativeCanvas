@@ -35,14 +35,13 @@ square = (ctx) ->
     c.rect(ctx.x - ctx.s, ctx.y - ctx.s, ctx.s * 2, ctx.s * 2);
     c.stroke();
 
-
 arm = (ctx) ->
   next(ctx) do
-    transform( {s: random(5) * 10 }, square)
+    transform( {s: random(30) }, circle)
     transform( y: 40, arm)
     transform( y: -40, arm)
-    transform( x: 40, arm)
-    transform( x: -40, arm)
+    transform( x: 30, arm)
+    transform( x: -30, arm)
 
 start = (ctx) ->
   next(ctx) do
@@ -63,8 +62,9 @@ execLoop = (n, elements) ->
     setTimeout -> render(n-1)
 
   render(n)
+
     
-test = (n=6)-> 
+test = (n=7)-> 
   console.log execLoop n, start defaultContext!
 
 global.draw = ->
